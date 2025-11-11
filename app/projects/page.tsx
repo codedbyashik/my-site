@@ -1,13 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import { projects as allProjects } from "@/data/projects";
 
 type Star = { x: number; y: number; size: number; speed: number; angle: number };
 
-// Categories
 const categories = ["All", "Frontend", "Backend", "Fullstack", "React", "Next.js", "Node.js"];
 
 export default function ProjectShowcase() {
@@ -46,10 +45,10 @@ export default function ProjectShowcase() {
 
   return (
     <section className="relative py-24 bg-[#0d1117] text-white overflow-hidden min-h-screen">
-      {/* 🌟 Stars */}
+      {/* Stars */}
       {stars.map((star, idx) => (
         <motion.div
-          key={idx}
+          key={`star-${idx}`}
           className="absolute rounded-full bg-white opacity-70 shadow-glow"
           style={{ width: star.size, height: star.size, top: star.y, left: star.x }}
           animate={{
@@ -61,34 +60,13 @@ export default function ProjectShowcase() {
         />
       ))}
 
-      {/* Shooting stars */}
-      {stars.map((star, idx) => (
-        <motion.div
-          key={`shoot-${idx}`}
-          className="absolute w-1 h-1 bg-white rounded-full opacity-70 shadow-glow"
-          style={{ top: star.y, left: star.x }}
-          animate={{
-            x: [0, 50 + Math.random() * 100],
-            y: [0, -50 - Math.random() * 100],
-            opacity: [1, 0],
-          }}
-          transition={{
-            repeat: Infinity,
-            repeatType: "loop",
-            duration: 2 + Math.random() * 2,
-            delay: Math.random() * 5,
-            ease: "easeInOut",
-          }}
-        />
-      ))}
-
       <div className="max-w-7xl mx-auto px-6">
         {/* Title */}
         <h2 className="text-4xl md:text-5xl font-extrabold mb-8 text-center bg-gradient-to-r from-yellow-400 via-pink-400 to-purple-500 bg-clip-text text-transparent animate-text-shimmer">
           My Projects
         </h2>
 
-        {/* Search Bar */}
+        {/* Search */}
         <div className="flex justify-center mb-6">
           <input
             type="text"
@@ -105,12 +83,11 @@ export default function ProjectShowcase() {
             <button
               key={cat}
               onClick={() => setActiveCategory(cat)}
-              className={`px-5 py-2 rounded-full font-semibold transition-all shadow-lg
-                ${
-                  activeCategory === cat
-                    ? "bg-gradient-to-r from-yellow-400 via-pink-500 to-purple-500 text-black shadow-2xl scale-105"
-                    : "bg-white/10 text-white hover:bg-gradient-to-r hover:from-yellow-400 hover:via-pink-500 hover:to-purple-500 hover:text-black"
-                }`}
+              className={`px-5 py-2 rounded-full font-semibold transition-all shadow-lg ${
+                activeCategory === cat
+                  ? "bg-gradient-to-r from-yellow-400 via-pink-500 to-purple-500 text-black shadow-2xl scale-105"
+                  : "bg-white/10 text-white hover:bg-gradient-to-r hover:from-yellow-400 hover:via-pink-500 hover:to-purple-500 hover:text-black"
+              }`}
             >
               {cat}
             </button>
@@ -119,62 +96,65 @@ export default function ProjectShowcase() {
 
         {/* Projects Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-          {filteredProjects.map((project, idx) => (
-            <motion.div
-              key={idx}
-              className="relative rounded-2xl overflow-hidden shadow-2xl cursor-pointer group"
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: idx * 0.15, duration: 0.6, ease: "easeOut" }}
-            >
-              <Image
-                src={project.image}
-                alt={project.title}
-                width={500}
-                height={300}
-                className="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-500"
-              />
+          <AnimatePresence>
+            {filteredProjects.map((project, idx) => (
+              <motion.div
+                key={`${project.title}-${idx}`} // ✅ unique key
+                className="relative rounded-2xl overflow-hidden shadow-2xl cursor-pointer group"
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 20 }}
+                transition={{ delay: idx * 0.1, duration: 0.6, ease: "easeOut" }}
+              >
+                <Image
+                  src={project.image}
+                  alt={project.title}
+                  width={500}
+                  height={300}
+                  className="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-500"
+                />
 
-              {/* Overlay */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex flex-col justify-end p-6 pointer-events-none">
-                <h3 className="text-xl font-bold mb-2">{project.title}</h3>
-                <p className="text-gray-300 mb-4 line-clamp-2">{project.description}</p>
-
-                <div className="flex flex-wrap gap-2 mb-4">
-                  {project.techStack.map((tech, tIdx) => (
-                    <span key={tIdx} className="px-2 py-1 bg-white/10 rounded-lg text-sm">
-                      {tech}
-                    </span>
-                  ))}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex flex-col justify-end p-6 pointer-events-none">
+                  <h3 className="text-xl font-bold mb-2">{project.title}</h3>
+                  <p className="text-gray-300 mb-4 line-clamp-2">{project.description}</p>
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    {project.techStack.map((tech, tIdx) => (
+                      <span key={tIdx} className="px-2 py-1 bg-white/10 rounded-lg text-sm">
+                        {tech}
+                      </span>
+                    ))}
+                  </div>
+                  <div className="flex gap-3 pointer-events-auto">
+                    {project.liveLink && (
+                      <a
+                        href={project.liveLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-4 py-2 bg-gradient-to-r from-yellow-400 to-pink-500 text-black font-semibold rounded-lg shadow-lg hover:scale-105 transition-transform"
+                      >
+                        Live Site
+                      </a>
+                    )}
+                    {project.github && (
+                      <a
+                        href={project.github}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-4 py-2 bg-white/10 backdrop-blur-md rounded-lg text-white font-semibold hover:scale-105 hover:bg-white/20 transition-all"
+                      >
+                        GitHub
+                      </a>
+                    )}
+                  </div>
                 </div>
 
-                <div className="flex gap-3 pointer-events-auto">
-                  <a
-                    href={project.liveLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="px-4 py-2 bg-gradient-to-r from-yellow-400 to-pink-500 text-black font-semibold rounded-lg shadow-lg hover:scale-105 transition-transform"
-                  >
-                    Live Site
-                  </a>
-                  <a
-                    href={project.github}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="px-4 py-2 bg-white/10 backdrop-blur-md rounded-lg text-white font-semibold hover:scale-105 hover:bg-white/20 transition-all"
-                  >
-                    GitHub
-                  </a>
-                </div>
-              </div>
-
-              <div className="absolute inset-0 rounded-2xl border-2 border-transparent group-hover:border-gradient animate-glow pointer-events-none"></div>
-            </motion.div>
-          ))}
+                <div className="absolute inset-0 rounded-2xl border-2 border-transparent group-hover:border-gradient animate-glow pointer-events-none"></div>
+              </motion.div>
+            ))}
+          </AnimatePresence>
         </div>
       </div>
 
-      {/* Styles */}
       <style jsx>{`
         @keyframes text-shimmer {
           0% { background-position: -200% 0; }

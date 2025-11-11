@@ -8,24 +8,24 @@ import CTAButton from "./CTAButton";
 import { FaReact, FaNodeJs, FaGitAlt, FaFigma } from "react-icons/fa";
 
 const stats = [
-  { label: "Projects Completed", value: 45 },
-  { label: "Clients Worked", value: 20 },
-  { label: "Years Experience", value: 3 },
-  { label: "Awards Won", value: 2 },
+  { label: "Projects Completed", value: 45, info: "Delivered across multiple domains" },
+  { label: "Clients Worked", value: 20, info: "From 5+ countries" },
+  { label: "Years Experience", value: 3, info: "Started coding in 2018" },
+  { label: "Awards Won", value: 2, info: "Recognized for UI/UX excellence" },
 ];
 
 const skills = [
-  { name: "React", icon: <FaReact className="text-blue-400 w-6 h-6" /> },
-  { name: "Next.js", icon: <FaReact className="text-white w-6 h-6" /> },
-  { name: "Node.js", icon: <FaNodeJs className="text-green-500 w-6 h-6" /> },
-  { name: "Git", icon: <FaGitAlt className="text-red-500 w-6 h-6" /> },
-  { name: "Figma", icon: <FaFigma className="text-pink-500 w-6 h-6" /> },
+  { name: "React", icon: <FaReact className="text-blue-400 w-6 h-6" />, level: 90 },
+  { name: "Next.js", icon: <FaReact className="text-white w-6 h-6" />, level: 85 },
+  { name: "Node.js", icon: <FaNodeJs className="text-green-500 w-6 h-6" />, level: 80 },
+  { name: "Git", icon: <FaGitAlt className="text-red-500 w-6 h-6" />, level: 75 },
+  { name: "Figma", icon: <FaFigma className="text-pink-500 w-6 h-6" />, level: 70 },
 ];
 
 const hobbies = [
-  { label: "Astronomy 🌌", emoji: "🌌" },
-  { label: "Gaming 🎮", emoji: "🎮" },
-  { label: "Music 🎵", emoji: "🎵" },
+  { label: "Astronomy 🌌", emoji: "🌌", info: "I love stargazing and learning about the universe." },
+  { label: "Gaming 🎮", emoji: "🎮", info: "Strategy and adventure games are my favorite." },
+  { label: "Music 🎵", emoji: "🎵", info: "I enjoy composing and listening to music." },
 ];
 
 export default function AboutSection() {
@@ -79,31 +79,53 @@ export default function AboutSection() {
             I am a full-stack web developer crafting premium, interactive digital experiences. Combining design, animation, and code, I deliver websites and apps that users love.
           </motion.p>
 
-          {/* Journey */}
-          <motion.p
-            className="text-gray-400 italic"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4, duration: 1 }}
-          >
-            Started coding in 2018, my mission is to blend aesthetics with functionality in every project.
-          </motion.p>
+          {/* Timeline */}
+          <motion.div className="relative mt-4 border-l border-yellow-400/40 pl-4 space-y-2">
+            {[
+              { year: "2018", event: "Started Coding" },
+              { year: "2020", event: "First Freelance Project" },
+              { year: "2022", event: "Built My Portfolio" },
+              { year: "2024", event: "Professional Web Developer" },
+            ].map((item, idx) => (
+              <motion.div
+                key={idx}
+                className="relative"
+                initial={{ opacity: 0, x: -20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: idx * 0.2, duration: 0.6 }}
+              >
+                <span className="absolute -left-6 top-0 w-4 h-4 bg-yellow-400 rounded-full"></span>
+                <p className="text-gray-400"><span className="font-semibold text-yellow-400">{item.year}:</span> {item.event}</p>
+              </motion.div>
+            ))}
+          </motion.div>
 
-          {/* Skills */}
+          {/* Skills with Progress Bars */}
           <motion.div
-            className="flex flex-wrap gap-4 mt-4 justify-center lg:justify-start"
+            className="flex flex-col gap-3 mt-6"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.6, duration: 1 }}
           >
             {skills.map((skill, idx) => (
-              <div key={idx} className="flex items-center gap-2 bg-white/10 px-3 py-1 rounded-lg hover:bg-white/20 hover:shadow-glow transition-all duration-300">
-                {skill.icon} <span>{skill.name}</span>
+              <div key={idx} className="flex flex-col">
+                <div className="flex items-center gap-2 mb-1">
+                  {skill.icon} <span>{skill.name}</span>
+                </div>
+                <div className="w-full h-2 bg-white/10 rounded-full">
+                  <motion.div
+                    className="h-2 bg-yellow-400 rounded-full"
+                    initial={{ width: 0 }}
+                    animate={{ width: `${skill.level}%` }}
+                    transition={{ duration: 1 + idx * 0.3 }}
+                  />
+                </div>
               </div>
             ))}
           </motion.div>
 
-          {/* Stats */}
+          {/* Stats with Tooltip */}
           <motion.div
             className="flex flex-wrap gap-6 mt-6 justify-center lg:justify-start"
             initial={{ opacity: 0 }}
@@ -111,16 +133,19 @@ export default function AboutSection() {
             transition={{ delay: 0.8, duration: 1 }}
           >
             {stats.map((stat, idx) => (
-              <div key={idx} className="text-center lg:text-left">
+              <div key={idx} className="relative group text-center lg:text-left">
                 <p className="text-3xl font-bold text-yellow-400 shadow-glow">
                   <CountUp end={stat.value} duration={2} />+
                 </p>
                 <p className="text-gray-400">{stat.label}</p>
+                <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 px-2 py-1 text-xs rounded bg-gray-700 text-white opacity-0 group-hover:opacity-100 transition-opacity">
+                  {stat.info}
+                </div>
               </div>
             ))}
           </motion.div>
 
-          {/* Hobbies */}
+          {/* Hobbies with Tooltip */}
           <motion.div
             className="flex gap-4 mt-6 justify-center lg:justify-start text-gray-300"
             initial={{ opacity: 0 }}
@@ -128,7 +153,14 @@ export default function AboutSection() {
             transition={{ delay: 1, duration: 1 }}
           >
             {hobbies.map((hobby, idx) => (
-              <span key={idx} className="px-2 py-1 bg-white/10 rounded-lg hover:bg-white/20 hover:shadow-glow transition-all duration-300">{hobby.emoji} {hobby.label}</span>
+              <div key={idx} className="relative group">
+                <span className="px-2 py-1 bg-white/10 rounded-lg hover:bg-white/20 hover:shadow-glow transition-all duration-300">
+                  {hobby.emoji} {hobby.label}
+                </span>
+                <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 px-2 py-1 text-xs rounded bg-gray-700 text-white opacity-0 group-hover:opacity-100 transition-opacity">
+                  {hobby.info}
+                </div>
+              </div>
             ))}
           </motion.div>
 

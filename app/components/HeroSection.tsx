@@ -4,7 +4,41 @@ import { useEffect, useState, useCallback } from "react";
 import { motion, Variants, easeOut } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
+import { FaLinkedin, FaGithub, FaDribbble } from "react-icons/fa";
 
+// Typing effect component
+function TypingText({ texts }: { texts: string[] }) {
+  const [displayText, setDisplayText] = useState("");
+  const [index, setIndex] = useState(0);
+  const [subIndex, setSubIndex] = useState(0);
+  const [deleting, setDeleting] = useState(false);
+
+  useEffect(() => {
+    if (index === texts.length) return;
+
+    const timeout = setTimeout(() => {
+      const current = texts[index];
+      if (!deleting) {
+        setDisplayText(current.slice(0, subIndex + 1));
+        setSubIndex(subIndex + 1);
+        if (subIndex + 1 === current.length) setDeleting(true);
+      } else {
+        setDisplayText(current.slice(0, subIndex - 1));
+        setSubIndex(subIndex - 1);
+        if (subIndex - 1 === 0) {
+          setDeleting(false);
+          setIndex((prev) => (prev + 1) % texts.length);
+        }
+      }
+    }, deleting ? 50 : 100);
+
+    return () => clearTimeout(timeout);
+  }, [subIndex, index, deleting, texts]);
+
+  return <span className="text-white font-semibold">{displayText}</span>;
+}
+
+// Types
 type Star = { top: string; left: string; size: number; duration: number; delay: number };
 type Comet = { top: string; left: string; rotate: number; duration: number; delay: number };
 type Particle = { x: number; y: number; size: number; blur: number; speed: number };
@@ -15,10 +49,12 @@ export default function HeroSection() {
   const [comets, setComets] = useState<Comet[]>([]);
   const [particles, setParticles] = useState<Particle[]>([]);
 
-  // ⭐ Generate all random elements on client-side only
   useEffect(() => {
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+
     setStars(
-      Array.from({ length: 120 }, () => ({
+      Array.from({ length: 100 }, () => ({
         top: `${Math.random() * 100}%`,
         left: `${Math.random() * 100}%`,
         size: 1 + Math.random() * 2,
@@ -28,7 +64,7 @@ export default function HeroSection() {
     );
 
     setComets(
-      Array.from({ length: 6 }, () => ({
+      Array.from({ length: 5 }, () => ({
         top: `${Math.random() * 80}%`,
         left: "-10%",
         rotate: Math.random() * 30 - 15,
@@ -38,9 +74,9 @@ export default function HeroSection() {
     );
 
     setParticles(
-      Array.from({ length: 60 }, () => ({
-        x: Math.random() * window.innerWidth,
-        y: Math.random() * window.innerHeight,
+      Array.from({ length: 50 }, () => ({
+        x: Math.random() * width,
+        y: Math.random() * height,
         size: 2 + Math.random() * 4,
         blur: 1 + Math.random() * 3,
         speed: 0.05 + Math.random() * 0.1,
@@ -58,7 +94,7 @@ export default function HeroSection() {
     return () => window.removeEventListener("mousemove", handleMouseMove);
   }, [handleMouseMove]);
 
-  // Framer-motion variants
+  // Text motion variants
   const textVariants: Variants = {
     hidden: { opacity: 0, y: 20 },
     visible: (i: number) => ({
@@ -70,13 +106,14 @@ export default function HeroSection() {
 
   return (
     <section className="relative h-screen w-full bg-gradient-to-b from-[#0d1117] via-[#1f1b24] to-[#0d1117] overflow-hidden flex items-center justify-center text-white">
+
       {/* Stars */}
       {stars.map((star, idx) => (
         <motion.div
           key={idx}
           className="absolute rounded-full bg-white/80 shadow-glow will-change-transform"
           style={{ width: star.size, height: star.size, top: star.top, left: star.left }}
-          animate={{ opacity: [0.3, 1, 0.3], y: ["0%", "15%", "0%"] }}
+          animate={{ opacity: [0.3, 1, 0.3], y: ["0%", "10%", "0%"] }}
           transition={{ duration: star.duration, delay: star.delay, repeat: Infinity, ease: "easeInOut" }}
         />
       ))}
@@ -105,14 +142,18 @@ export default function HeroSection() {
 
       {/* Hero Content */}
       <div className="relative z-10 flex flex-col md:flex-row items-center gap-10 px-6">
+
         <div className="flex-1 text-center md:text-left">
           <motion.h1 className="text-5xl md:text-6xl font-extrabold mb-4 tracking-wide" initial="hidden" animate="visible" custom={0} variants={textVariants}>
             Hi, I&apos;m <span className="text-blue-400">Ashik the Great</span>
           </motion.h1>
-          <motion.p className="text-lg md:text-xl mb-6 text-gray-300" initial="hidden" animate="visible" custom={1} variants={textVariants}>
-            I build <span className="text-white font-semibold">premium cosmic UI websites</span> with{" "}
-            <span className="text-blue-400 font-bold">glowing neon effects</span>.
-          </motion.p>
+
+          {/* Custom typing effect */}
+          <motion.div className="text-lg md:text-xl mb-6 text-gray-300" initial="hidden" animate="visible" custom={1} variants={textVariants}>
+            <TypingText texts={["I build cosmic UI websites", "I design glowing neon effects", "I craft interactive experiences"]} />
+          </motion.div>
+
+          {/* CTA Buttons */}
           <motion.div className="flex justify-center md:justify-start gap-4" initial="hidden" animate="visible" custom={2} variants={textVariants}>
             <Link href="/projects" className="px-6 py-3 bg-blue-600 rounded-lg text-white font-bold shadow-lg hover:scale-105 hover:shadow-blue-400/50 transition-transform duration-300">
               View Portfolio
@@ -121,11 +162,24 @@ export default function HeroSection() {
               Hire Me
             </Link>
           </motion.div>
+
+          {/* Social Links */}
+          <motion.div className="flex gap-4 mt-6 justify-center md:justify-start">
+            {[{ icon: <FaLinkedin />, link: "https://linkedin.com" }, { icon: <FaGithub />, link: "https://github.com" }, { icon: <FaDribbble />, link: "https://dribbble.com" }].map((social, idx) => (
+              <Link key={idx} href={social.link} target="_blank" className="text-white text-2xl hover:scale-110 hover:text-blue-400 transition-all duration-300">
+                {social.icon}
+              </Link>
+            ))}
+          </motion.div>
+
         </div>
 
+        {/* Profile Illustration */}
         <div className="flex-1 max-w-md md:max-w-lg mx-auto relative">
           <motion.div className="relative rounded-3xl shadow-2xl border border-white/10" animate={{ y: [0, -10, 0], scale: [1, 1.02, 1] }} transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}>
             <Image src="/ashik.png" alt="Hero Illustration" width={500} height={500} className="rounded-3xl" priority />
+
+            {/* Halo rings */}
             {["blue", "pink", "cyan"].map((color, idx) => (
               <motion.div key={idx} className={`absolute -inset-${8 + idx * 4} rounded-full border border-${color}-400/40`} animate={{ rotate: idx % 2 === 0 ? [0, 360] : [360, 0] }} transition={{ duration: 20 + idx * 10, repeat: Infinity, ease: "linear" }} />
             ))}
@@ -133,6 +187,12 @@ export default function HeroSection() {
         </div>
       </div>
 
+      {/* Scroll Indicator */}
+      <motion.div className="absolute bottom-6 left-1/2 -translate-x-1/2 text-gray-400 animate-bounce">
+        <span className="text-3xl">⌄</span>
+      </motion.div>
+
+      {/* Glow CSS */}
       <style jsx>{`
         .shadow-glow {
           box-shadow: 0 0 10px #fff, 0 0 20px #00f, 0 0 30px #f0f, 0 0 40px #0ff;
