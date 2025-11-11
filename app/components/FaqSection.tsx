@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
-type Star = { x: number; y: number; size: number; speed: number; angle: number };
+type Star = { x: number; y: number; size: number };
 type FAQItem = { question: string; answer: string };
 
 const faqData: FAQItem[] = [
@@ -27,26 +27,17 @@ const faqData: FAQItem[] = [
 
 export default function FAQSection() {
   const [stars, setStars] = useState<Star[]>([]);
-  const [cursor, setCursor] = useState({ x: 0, y: 0 });
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   useEffect(() => {
-    // Generate random stars
-    const generatedStars: Star[] = Array.from({ length: 80 }).map(() => ({
+    // Reduce stars for mobile performance
+    const starCount = window.innerWidth < 768 ? 15 : 40;
+    const generatedStars: Star[] = Array.from({ length: starCount }).map(() => ({
       x: Math.random() * window.innerWidth,
       y: Math.random() * window.innerHeight,
       size: 1 + Math.random() * 2,
-      speed: 0.5 + Math.random(),
-      angle: Math.random() * 360,
     }));
     setStars(generatedStars);
-
-    const handleMouseMove = (e: MouseEvent) => {
-      setCursor({ x: e.clientX, y: e.clientY });
-    };
-    window.addEventListener("mousemove", handleMouseMove);
-
-    return () => window.removeEventListener("mousemove", handleMouseMove);
   }, []);
 
   return (
@@ -56,19 +47,10 @@ export default function FAQSection() {
       {stars.map((star, idx) => (
         <motion.div
           key={idx}
-          className="absolute rounded-full bg-white/80 shadow-glow"
-          style={{
-            width: star.size,
-            height: star.size,
-            top: star.y,
-            left: star.x,
-          }}
-          animate={{
-            x: cursor.x / 60 + Math.sin(star.angle) * star.speed * 20,
-            y: cursor.y / 60 + Math.cos(star.angle) * star.speed * 20,
-            opacity: [0.3, 1, 0.3],
-          }}
-          transition={{ duration: 2 + Math.random(), repeat: Infinity, ease: "easeInOut" }}
+          className="absolute rounded-full bg-white/50 shadow-glow"
+          style={{ width: star.size, height: star.size, top: star.y, left: star.x }}
+          animate={{ opacity: [0.3, 1, 0.3], y: [0, 3, 0] }}
+          transition={{ duration: 3 + Math.random(), repeat: Infinity, ease: "easeInOut" }}
         />
       ))}
 
@@ -81,7 +63,7 @@ export default function FAQSection() {
           {faqData.map((item, idx) => (
             <div
               key={idx}
-              className="bg-white/5 backdrop-blur-md rounded-xl p-5 cursor-pointer hover:bg-white/10 transition-colors shadow-md"
+              className="bg-white/5 md:bg-white/10 backdrop-blur-sm md:backdrop-blur-md rounded-xl p-5 cursor-pointer hover:bg-white/10 transition-colors shadow-md"
               onClick={() => setOpenIndex(openIndex === idx ? null : idx)}
             >
               <div className="flex justify-between items-center">
@@ -91,10 +73,10 @@ export default function FAQSection() {
               <AnimatePresence>
                 {openIndex === idx && (
                   <motion.p
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: "auto" }}
-                    exit={{ opacity: 0, height: 0 }}
-                    transition={{ duration: 0.4 }}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.3 }}
                     className="mt-3 text-gray-300"
                   >
                     {item.answer}
@@ -116,7 +98,7 @@ export default function FAQSection() {
           animation: text-shimmer 3s linear infinite;
         }
         .shadow-glow {
-          box-shadow: 0 0 8px #facc15, 0 0 16px #f43f5e;
+          box-shadow: 0 0 6px #facc15, 0 0 12px #f43f5e;
         }
       `}</style>
     </section>

@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState, useEffect } from "react"; // ✅ React import added
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import Image from "next/image";
 
 interface TestimonialProps {
   name: string;
@@ -33,29 +34,36 @@ const testimonials: TestimonialProps[] = [
 
 export default function TestimonialSection() {
   return (
-    <section className="relative py-24 bg-gradient-to-b from-[#0d1117] to-[#07080a] text-white overflow-hidden">
-
+    <section className="relative py-16 bg-gradient-to-b from-[#0d1117] to-[#07080a] text-white overflow-hidden">
       {/* Stars only client-side */}
-      <ClientStars count={40} />
+      <ClientStars count={15} />
 
-      <div className="max-w-7xl mx-auto px-6">
-        <h2 className="text-4xl md:text-5xl font-extrabold mb-12 text-center bg-gradient-to-r from-yellow-400 via-pink-400 to-purple-500 bg-clip-text text-transparent animate-text-shimmer">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h2 className="text-3xl sm:text-4xl font-extrabold mb-12 text-center bg-gradient-to-r from-yellow-400 via-pink-400 to-purple-500 bg-clip-text text-transparent animate-text-shimmer">
           What Clients Say
         </h2>
 
-        <div className="grid md:grid-cols-3 gap-8">
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {testimonials.map((t, idx) => (
             <motion.div
               key={idx}
-              className="bg-white/10 p-6 rounded-3xl backdrop-blur-md shadow-glow flex flex-col items-center text-center hover:scale-105 hover:shadow-glow-lg transition-transform duration-300"
+              className="bg-white/5 p-6 rounded-2xl shadow-md backdrop-blur-sm flex flex-col items-center text-center transition-transform duration-300"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.8, delay: idx * 0.2 }}
+              transition={{ duration: 0.6, delay: idx * 0.15 }}
             >
-              <img src={t.avatar} alt={t.name} className="w-20 h-20 rounded-full mb-4 shadow-glow object-cover" />
-              <p className="text-gray-300 mb-4 italic">"{t.message}"</p>
-              <h3 className="font-semibold text-yellow-400 glow-text">{t.name}</h3>
+              <div className="w-20 h-20 relative mb-4">
+                <Image
+                  src={t.avatar}
+                  alt={t.name}
+                  fill
+                  className="rounded-full object-cover shadow-sm"
+                  priority
+                />
+              </div>
+              <p className="text-gray-300 mb-3 italic">"{t.message}"</p>
+              <h3 className="font-semibold text-yellow-400">{t.name}</h3>
               <span className="text-sm text-gray-400">{t.role}</span>
             </motion.div>
           ))}
@@ -63,23 +71,27 @@ export default function TestimonialSection() {
       </div>
 
       <style jsx>{`
-        @keyframes text-shimmer { 0% {background-position:-200% 0;} 100% {background-position:200% 0;} }
-        .animate-text-shimmer { background-size:200% auto; animation:text-shimmer 3s linear infinite; }
-        .shadow-glow { box-shadow: 0 0 12px #facc15, 0 0 24px #f43f5e; }
-        .glow-text { text-shadow: 0 0 8px #f43f5e, 0 0 16px #facc15; }
+        @keyframes text-shimmer {
+          0% { background-position: -200% 0; }
+          100% { background-position: 200% 0; }
+        }
+        .animate-text-shimmer {
+          background-size: 200% auto;
+          animation: text-shimmer 3s linear infinite;
+        }
       `}</style>
     </section>
   );
 }
 
-// 🌟 Stars Component only client-side
+// 🌟 Client-only stars (optimized for mobile)
 function ClientStars({ count }: { count: number }) {
-  const [stars, setStars] = useState<{ top: string; left: string; size: number }[]>([]); // ✅ useState imported
-  useEffect(() => { // ✅ useEffect imported
+  const [stars, setStars] = useState<{ top: string; left: string; size: number }[]>([]);
+  useEffect(() => {
     const generated = Array.from({ length: count }).map(() => ({
       top: Math.random() * 100 + "%",
       left: Math.random() * 100 + "%",
-      size: 1 + Math.random() * 2,
+      size: 1 + Math.random() * 1.5, // smaller & lighter
     }));
     setStars(generated);
   }, [count]);
@@ -89,10 +101,10 @@ function ClientStars({ count }: { count: number }) {
       {stars.map((star, idx) => (
         <motion.div
           key={idx}
-          className="absolute rounded-full bg-white/60 shadow-[0_0_6px_#ffffff]"
+          className="absolute rounded-full bg-white/50"
           style={{ width: star.size, height: star.size, top: star.top, left: star.left }}
-          animate={{ opacity: [0.2, 1, 0.2], y: [0, 5, 0] }}
-          transition={{ duration: 4 + Math.random() * 4, repeat: Infinity, ease: "easeInOut" }}
+          animate={{ opacity: [0.2, 1, 0.2], y: [0, 3, 0] }}
+          transition={{ duration: 3 + Math.random() * 2, repeat: Infinity, ease: "easeInOut" }}
         />
       ))}
     </>

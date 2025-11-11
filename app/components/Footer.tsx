@@ -10,9 +10,11 @@ type Star = { x: number; y: number; size: number; speed: number; angle: number }
 export default function Footer() {
   const [stars, setStars] = useState<Star[]>([]);
   const [cursor, setCursor] = useState({ x: 0, y: 0 });
+  const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
 
   useEffect(() => {
-    const generatedStars: Star[] = Array.from({ length: 80 }).map(() => ({
+    const starCount = isMobile ? 30 : 80;
+    const generatedStars: Star[] = Array.from({ length: starCount }).map(() => ({
       x: Math.random() * window.innerWidth,
       y: Math.random() * window.innerHeight,
       size: 1 + Math.random() * 2,
@@ -21,11 +23,12 @@ export default function Footer() {
     }));
     setStars(generatedStars);
 
-    const handleMouseMove = (e: MouseEvent) => setCursor({ x: e.clientX, y: e.clientY });
-    window.addEventListener("mousemove", handleMouseMove);
-
-    return () => window.removeEventListener("mousemove", handleMouseMove);
-  }, []);
+    if (!isMobile) {
+      const handleMouseMove = (e: MouseEvent) => setCursor({ x: e.clientX, y: e.clientY });
+      window.addEventListener("mousemove", handleMouseMove);
+      return () => window.removeEventListener("mousemove", handleMouseMove);
+    }
+  }, [isMobile]);
 
   return (
     <footer className="relative bg-gradient-to-t from-[#0d1117] to-[#111827] text-white overflow-hidden py-16">
@@ -35,14 +38,9 @@ export default function Footer() {
         <motion.div
           key={idx}
           className="absolute rounded-full bg-white/80 shadow-glow"
-          style={{
-            width: star.size,
-            height: star.size,
-            top: star.y,
-            left: star.x,
-          }}
+          style={{ width: star.size, height: star.size, top: star.y, left: star.x }}
           animate={{
-            x: cursor.x / 60 + Math.sin(star.angle) * star.speed * 20,
+            x: isMobile ? 0 : cursor.x / 60 + Math.sin(star.angle) * star.speed * 20,
             y: cursor.y / 60 + Math.cos(star.angle) * star.speed * 20,
             opacity: [0.3, 1, 0.3],
           }}

@@ -11,12 +11,17 @@ export default function ContactSection() {
   const [shootingStars, setShootingStars] = useState<any[]>([]);
   const [showToast, setShowToast] = useState(false);
 
-  // Generate floating particles & shooting stars
+  // Detect mobile
+  const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
+
+  // Generate particles & shooting stars
   useEffect(() => {
     const width = window.innerWidth;
     const height = window.innerHeight;
+    const particleCount = isMobile ? 15 : 50;
+    const shootingStarCount = isMobile ? 2 : 5;
 
-    const newParticles = Array.from({ length: 50 }).map(() => ({
+    const newParticles = Array.from({ length: particleCount }).map(() => ({
       x: Math.random() * width,
       y: Math.random() * height,
       size: 1 + Math.random() * 2,
@@ -24,7 +29,7 @@ export default function ContactSection() {
       blur: 1 + Math.random() * 2,
     }));
 
-    const newShootingStars = Array.from({ length: 5 }).map(() => ({
+    const newShootingStars = Array.from({ length: shootingStarCount }).map(() => ({
       x: Math.random() * width,
       y: Math.random() * height / 2,
       length: 50 + Math.random() * 100,
@@ -34,17 +39,19 @@ export default function ContactSection() {
 
     setParticles(newParticles);
     setShootingStars(newShootingStars);
-  }, []);
+  }, [isMobile]);
 
-  // Track mouse for particle movement
+  // Track mouse only on desktop
   const handleMouseMove = useCallback((e: MouseEvent) => {
-    setCursor({ x: e.clientX, y: e.clientY });
-  }, []);
+    if (!isMobile) setCursor({ x: e.clientX, y: e.clientY });
+  }, [isMobile]);
 
   useEffect(() => {
-    window.addEventListener("mousemove", handleMouseMove);
-    return () => window.removeEventListener("mousemove", handleMouseMove);
-  }, [handleMouseMove]);
+    if (!isMobile) {
+      window.addEventListener("mousemove", handleMouseMove);
+      return () => window.removeEventListener("mousemove", handleMouseMove);
+    }
+  }, [handleMouseMove, isMobile]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -76,8 +83,8 @@ export default function ContactSection() {
             filter: `blur(${p.blur}px)`,
           }}
           animate={{
-            x: cursor.x * p.speed + Math.random() * 5,
-            y: cursor.y * p.speed + Math.random() * 5,
+            x: !isMobile ? cursor.x * p.speed + Math.random() * 5 : 0,
+            y: !isMobile ? cursor.y * p.speed + Math.random() * 5 : 0,
             opacity: [0.3, 0.8, 0.3],
           }}
           transition={{ duration: 2 + Math.random(), repeat: Infinity, ease: "easeInOut" }}
@@ -172,7 +179,7 @@ export default function ContactSection() {
           />
           <motion.button
             type="submit"
-            whileHover={{ scale: 1.05, boxShadow: "0 0 20px #facc15, 0 0 40px #f43f5e" }}
+            whileHover={!isMobile ? { scale: 1.05, boxShadow: "0 0 20px #facc15, 0 0 40px #f43f5e" } : {}}
             className="mt-2 px-6 py-3 bg-gradient-to-r from-yellow-400 to-pink-500 text-black font-bold rounded-2xl transition-all"
           >
             Send Message
@@ -192,7 +199,6 @@ export default function ContactSection() {
         </motion.div>
       )}
 
-      {/* Styles */}
       <style jsx>{`
         @keyframes text-shimmer {
           0% { background-position: -200% 0; }
@@ -201,9 +207,6 @@ export default function ContactSection() {
         .animate-text-shimmer {
           background-size: 200% auto;
           animation: text-shimmer 3s linear infinite;
-        }
-        .shadow-glow {
-          box-shadow: 0 0 8px #facc15, 0 0 16px #f43f5e;
         }
         @keyframes gradient-move {
           0% { background-position: 0% 50%; }

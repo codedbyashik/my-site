@@ -16,8 +16,16 @@ export default function ProjectShowcase() {
   const [activeCategory, setActiveCategory] = useState("All");
   const [filteredProjects, setFilteredProjects] = useState(allProjects);
 
+  // Detect mobile
+  const [isMobile, setIsMobile] = useState(false);
   useEffect(() => {
-    const generatedStars: Star[] = Array.from({ length: 70 }).map(() => ({
+    setIsMobile(window.innerWidth < 768);
+  }, []);
+
+  useEffect(() => {
+    if (isMobile) return; // Mobile-এ stars animation skip করা
+
+    const generatedStars: Star[] = Array.from({ length: 50 }).map(() => ({
       x: Math.random() * window.innerWidth,
       y: Math.random() * window.innerHeight,
       size: 1 + Math.random() * 2,
@@ -29,7 +37,7 @@ export default function ProjectShowcase() {
     const handleMouseMove = (e: MouseEvent) => setCursor({ x: e.clientX, y: e.clientY });
     window.addEventListener("mousemove", handleMouseMove);
     return () => window.removeEventListener("mousemove", handleMouseMove);
-  }, []);
+  }, [isMobile]);
 
   useEffect(() => {
     const filtered = allProjects.filter((p) => {
@@ -43,25 +51,29 @@ export default function ProjectShowcase() {
     setFilteredProjects(filtered);
   }, [search, activeCategory]);
 
+  // Tap overlay for mobile
+  const [activeProject, setActiveProject] = useState<string | null>(null);
+
   return (
     <section className="relative py-24 bg-[#0d1117] text-white overflow-hidden min-h-screen">
+
       {/* Stars */}
-      {stars.map((star, idx) => (
-        <motion.div
-          key={`star-${idx}`}
-          className="absolute rounded-full bg-white opacity-70 shadow-glow"
-          style={{ width: star.size, height: star.size, top: star.y, left: star.x }}
-          animate={{
-            x: cursor.x / 60 + Math.sin(star.angle) * star.speed * 20,
-            y: cursor.y / 60 + Math.cos(star.angle) * star.speed * 20,
-            opacity: [0.3, 1, 0.3],
-          }}
-          transition={{ duration: 2 + Math.random(), repeat: Infinity, ease: "easeInOut" }}
-        />
-      ))}
+      {!isMobile &&
+        stars.map((star, idx) => (
+          <motion.div
+            key={`star-${idx}`}
+            className="absolute rounded-full bg-white opacity-70 shadow-glow"
+            style={{ width: star.size, height: star.size, top: star.y, left: star.x }}
+            animate={{
+              x: cursor.x / 60 + Math.sin(star.angle) * star.speed * 20,
+              y: cursor.y / 60 + Math.cos(star.angle) * star.speed * 20,
+              opacity: [0.3, 1, 0.3],
+            }}
+            transition={{ duration: 2 + Math.random(), repeat: Infinity, ease: "easeInOut" }}
+          />
+        ))}
 
       <div className="max-w-7xl mx-auto px-6">
-        {/* Title */}
         <h2 className="text-4xl md:text-5xl font-extrabold mb-8 text-center bg-gradient-to-r from-yellow-400 via-pink-400 to-purple-500 bg-clip-text text-transparent animate-text-shimmer">
           My Projects
         </h2>
@@ -99,54 +111,58 @@ export default function ProjectShowcase() {
           <AnimatePresence>
             {filteredProjects.map((project, idx) => (
               <motion.div
-                key={`${project.title}-${idx}`} // ✅ unique key
+                key={`${project.title}-${idx}`}
                 className="relative rounded-2xl overflow-hidden shadow-2xl cursor-pointer group"
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 20 }}
                 transition={{ delay: idx * 0.1, duration: 0.6, ease: "easeOut" }}
+                onClick={() => setActiveProject(activeProject === project.title ? null : project.title)}
               >
                 <Image
                   src={project.image}
                   alt={project.title}
                   width={500}
                   height={300}
-                  className="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-500"
+                  className="w-full h-auto aspect-video object-cover group-hover:scale-105 transition-transform duration-500"
                 />
 
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex flex-col justify-end p-6 pointer-events-none">
-                  <h3 className="text-xl font-bold mb-2">{project.title}</h3>
-                  <p className="text-gray-300 mb-4 line-clamp-2">{project.description}</p>
-                  <div className="flex flex-wrap gap-2 mb-4">
-                    {project.techStack.map((tech, tIdx) => (
-                      <span key={tIdx} className="px-2 py-1 bg-white/10 rounded-lg text-sm">
-                        {tech}
-                      </span>
-                    ))}
+                {/* Overlay */}
+                {(activeProject === project.title || !isMobile) && (
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex flex-col justify-end p-6 pointer-events-none group-hover:pointer-events-auto">
+                    <h3 className="text-xl font-bold mb-2">{project.title}</h3>
+                    <p className="text-gray-300 mb-4 line-clamp-2">{project.description}</p>
+                    <div className="flex flex-wrap gap-2 mb-4">
+                      {project.techStack.map((tech, tIdx) => (
+                        <span key={tIdx} className="px-2 py-1 bg-white/10 rounded-lg text-sm">
+                          {tech}
+                        </span>
+                      ))}
+                    </div>
+                    <div className="flex gap-3">
+                      {project.liveLink && (
+                        <a
+                          href={project.liveLink}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="px-4 py-2 bg-gradient-to-r from-yellow-400 to-pink-500 text-black font-semibold rounded-lg shadow-lg hover:scale-105 transition-transform"
+                        >
+                          Live Site
+                        </a>
+                      )}
+                      {project.github && (
+                        <a
+                          href={project.github}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="px-4 py-2 bg-white/10 backdrop-blur-md rounded-lg text-white font-semibold hover:scale-105 hover:bg-white/20 transition-all"
+                        >
+                          GitHub
+                        </a>
+                      )}
+                    </div>
                   </div>
-                  <div className="flex gap-3 pointer-events-auto">
-                    {project.liveLink && (
-                      <a
-                        href={project.liveLink}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="px-4 py-2 bg-gradient-to-r from-yellow-400 to-pink-500 text-black font-semibold rounded-lg shadow-lg hover:scale-105 transition-transform"
-                      >
-                        Live Site
-                      </a>
-                    )}
-                    {project.github && (
-                      <a
-                        href={project.github}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="px-4 py-2 bg-white/10 backdrop-blur-md rounded-lg text-white font-semibold hover:scale-105 hover:bg-white/20 transition-all"
-                      >
-                        GitHub
-                      </a>
-                    )}
-                  </div>
-                </div>
+                )}
 
                 <div className="absolute inset-0 rounded-2xl border-2 border-transparent group-hover:border-gradient animate-glow pointer-events-none"></div>
               </motion.div>

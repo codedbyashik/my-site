@@ -5,10 +5,9 @@ import { motion } from "framer-motion";
 import HeroSection from "./components/HeroSection";
 import AboutSection from "./components/AboutSection";
 import ServiceCard from "./components/ServiceCard";
-import TestimonialSection from "./components/Testimonial"; // ✅ Import
- // ✅ Import FAQ
-import { FaCode, FaPaintBrush, FaServer } from "react-icons/fa";
+import TestimonialSection from "./components/Testimonial";
 import FAQSection from "./components/FaqSection";
+import { FaCode, FaPaintBrush, FaServer } from "react-icons/fa";
 
 // Services data
 const services = [
@@ -21,9 +20,18 @@ export default function Home() {
   const [stars, setStars] = useState<
     { size: number; top: number; left: number; delay: number; duration: number }[]
   >([]);
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
-    const generatedStars = Array.from({ length: 60 }).map(() => ({
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
+  useEffect(() => {
+    const starCount = isMobile ? 30 : 60; // reduce stars on mobile
+    const generatedStars = Array.from({ length: starCount }).map(() => ({
       size: Math.random() * 2 + 1,
       top: Math.random() * 100,
       left: Math.random() * 100,
@@ -31,7 +39,7 @@ export default function Home() {
       duration: Math.random() * 5 + 5,
     }));
     setStars(generatedStars);
-  }, []);
+  }, [isMobile]);
 
   return (
     <div className="relative bg-[#0d1117] overflow-hidden min-h-screen">
@@ -47,7 +55,7 @@ export default function Home() {
             top: `${star.top}%`,
             left: `${star.left}%`,
           }}
-          animate={{ opacity: [0.2, 0.8, 0.2], y: [0, 2, 0] }}
+          animate={{ opacity: [0.2, 0.8, 0.2], y: [0, isMobile ? 1 : 2, 0] }}
           transition={{
             delay: star.delay,
             duration: star.duration,
@@ -90,8 +98,7 @@ export default function Home() {
       {/* FAQ Section */}
       <FAQSection/>
 
-
-      {/* Text shimmer animation */}
+      {/* Global Styles */}
       <style jsx>{`
         @keyframes text-shimmer {
           0% { background-position: -200% 0; }
@@ -102,10 +109,9 @@ export default function Home() {
           animation: text-shimmer 3s linear infinite;
         }
         .shadow-glow {
-          box-shadow: 0 0 8px #facc15, 0 0 16px #f43f5e;
+          box-shadow: 0 0 6px #facc15, 0 0 12px #f43f5e;
         }
       `}</style>
-
     </div>
   );
 }
